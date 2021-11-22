@@ -8,8 +8,8 @@ workloads:
         - sequential_read_512k_2thread.fio
   - workload:
       type: vdbench
-      run: False
-      record: [read_iops, read_bw, write_iops, write_bw]
+      run: True
+      record: [read_bw, write_bw]
       workload_files:
         - sequential_read_512k.vdbench
         - sequential_write_512k.vdbench

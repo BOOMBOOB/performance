@@ -31,7 +31,8 @@ def send_data_to_prom(msg, client, prometheus_records):
     """
     prometheus_records = prometheus_records
     for record, prometheus_record in prometheus_records:
-        prometheus_record.labels(client).set(msg.get(record))
+        # get()必须给default值，否则set()会报错
+        prometheus_record.labels(client).set(msg.get(record, "0"))
 
 
 def socket_server(client, port, prometheus_records):

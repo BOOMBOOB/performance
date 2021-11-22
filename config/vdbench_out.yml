@@ -1,5 +1,28 @@
 vdbench:
-  read_iops: 1
-  read_bw: 2
-  write_iops: 3
-  write_bw: 4
+  time: 0
+  interval: 1
+  req_std_ops_rate: 2
+  req_std_ops_resp: 3
+  cpu_total: 4
+  cpu_sys: 5
+  read_pct: 6
+  read_rate: 7
+  read_resp: 8
+  write_rate: 9
+  write_resp: 10
+  read_bw: 11                 # mb/sec
+  write_bw: 12                # mb/sec
+  read_write_total: 13        # mb/sec
+  xfer_size: 14
+  mkdir_rate: 15
+  mkdir_resp: 16
+  rmdir_rate: 17
+  rmdir_resp: 18
+  create_rate: 19
+  create_resp: 20
+  open_rate: 21
+  open_resp: 22
+  close_rate: 23
+  close_resp: 24
+  delete_rate: 25
+  delete_resp: 26

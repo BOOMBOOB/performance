@@ -110,9 +110,9 @@ class SSHRemoteOperation:
             return
         try:
             self.sftp.put(file_path, file_name)
-            logger.info("上传文件 {} 成功".format(file_name))
+            logger.info("上传文件 {} 到 {} 成功".format(file_path, self.ip))
         except Exception as e:
-            logger.error("上传文件 {} 失败".format(file_name))
+            logger.error("上传文件 {} 到 {} 失败".format(file_path, self.ip))
         finally:
             self.sftp.close()
 

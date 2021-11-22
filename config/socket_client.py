@@ -7,7 +7,12 @@ import os
 
 
 client = socket.socket(type=socket.SOCK_DGRAM)
+
+# 分发客户端前需replace改写的相应配置
 ip_port = (("10.0.5.63", 9999))
+workload_type = "fio"
+workload = "sequential_write_512k_2thread.fio"
+work_dir = ""
 
 
 def send_data_format(data_line=None):
@@ -19,7 +24,11 @@ def send_data_format(data_line=None):
     data = {}
     record_indexes = []
     if data_line is not None:
-        split = data_line.split(";")
+        split = ""
+        if workload_type == "fio":
+            split = data_line.split(";")
+        if workload_type == "vdbench":
+            split = data_line.split(" ")
         for record_index in record_indexes:
             record, index = record_index
             data.update({record: split[index]})
@@ -43,9 +52,18 @@ def sh(command, send_msg=True):
     for line in iter(p.stdout.readline, b''):
         line = line.rstrip().decode('utf8')
         if send_msg:
-            content = send_data_format(line)
-            content = json.dumps(content).encode('utf-8')
-            client.sendto(content, ip_port)
+            if workload_type == "fio":
+                content = send_data_format(line)
+                content = json.dumps(content).encode('utf-8')
+                client.sendto(content, ip_port)
+            if workload_type == "vdbench":
+                new_line = ' '.join(line.replace("NaN", "0.00").split())
+                if len(new_line.split(" ")) != 27:
+                    continue
+                else:
+                    content = send_data_format(new_line)
+                    content = json.dumps(content).encode('utf-8')
+                    client.sendto(content, ip_port)
 
     if p.poll() == 0:
         # fio负载执行结束，发送 0 值使监控得知结束
@@ -64,16 +82,17 @@ def trash_del(file_name):
     :param file_name: 文件路径
     :return:
     """
-    os.remove(file_name)
+    abs_path = "{}/{}".format(work_dir, file_name)
+    os.remove(abs_path)
 
 
-workload_type = "fio"
-workload = "sequential_write_512k_2thread.fio"
 exec_cmd = ""
 if workload_type == "fio":
-    exec_cmd = "fio {} --output-format=terse --terse-version=3 --eta=never --status-interval=1".format(workload)
+    exec_cmd = "fio {}/{} --output-format=terse --terse-version=3 --eta=never --status-interval=1".format(work_dir,
+                                                                                                          workload)
 if workload_type == "vdbench":
-    exec_cmd = "./vdbench {}".format(workload)
+    # 查找/proc目录外的vdbench文件
+    exec_cmd = "`find / -path /proc -prune -o -name vdbench -type f -print` -f {}/{} -i 1".format(work_dir, workload)
 
 
 sh(exec_cmd)

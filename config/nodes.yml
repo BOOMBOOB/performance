@@ -13,20 +13,20 @@ clients:
       ip: 10.0.9.89
       hostname: node6
       port: 20021   # 客户端与主机socket通信的端口
-      work_dir: /root
+      work_dir: /home
       username: root
       password: daemon
   - client:
       ip: 10.0.9.90
       hostname: node7
       port: 20022   # 客户端与主机socket通信的端口
-      work_dir: /root
+      work_dir: /home
       username: root
       password: daemon
   - client:
       ip: 10.0.9.91
       hostname: node8
       port: 20023   # 客户端与主机socket通信的端口
-      work_dir: /root
+      work_dir: /home
       username: root
       password: daemon

@@ -1,1 +1,4 @@
-# this is a vdbench workload file
+messagescan=no
+fsd=fsd1,anchor=/data,depth=1,width=1,files=2,size=1m,openflags=o_direct
+fwd=fwd1,fsd=fsd1,host=localhost,operation=read,xfersize=512k,fileio=sequantial,fileselect=sequantial,threads=1
+rd=rd1,fwd=fwd1,fwdrate=max,format=restart,elapsed=10,interval=10

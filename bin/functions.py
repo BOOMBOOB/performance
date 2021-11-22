@@ -49,6 +49,7 @@ def analyse_prometheus_records():
     records = []
     for item in load_run:
         records = list(set(records).union(set(item)))
+    logger.info("由配置可得，监控指标为： {}".format(records))
     return records
 
 
@@ -81,22 +82,31 @@ def generate_client_exec(workload, workload_type, template_file=None):
     for i in range(len(CLIENTS)):
         read_file = open(file, 'r', encoding='utf-8')
         client_port = CLIENTS[i].get("client").get("port")
+        client_work_dir = CLIENTS[i].get("client").get("work_dir")
+        record_indexes = package_record(workload_type)
+
         file_name = "{}_{}.py".format(CLIENT_FILE_PREFIX, CLIENTS[i].get("client").get("hostname"))
         file_path = os.path.join(project_path, "temp", file_name)
         prepare_write(file_path)
         write_file = open(file_path, 'w', encoding='utf-8')
         logger.info("读取客户端执行文件模板 socket_client.py， 生成第 {} 个客户端执行文件".format(i))
         for line in read_file:
-            # 替换服务端IP与配置的客户端通信socket_port； 替换负载类型； 替换指定的要执行的负载； 替换要监控的指标；
             write_file.write(line.
+                             # 替换socket通信的端口
                              replace('ip_port = (("10.0.5.63", 9999))', 'ip_port = (("{}", {}))'.
                                      format(SOCK_SERVER_IP, client_port)).
+                             # 替换测试负载类型
                              replace('workload_type = "fio"', 'workload_type = "{}"'.format(workload_type)).
+                             # 替换测试负载配置文件
                              replace('workload = "sequential_write_512k_2thread.fio"',
                                      'workload = "{}"'.format(workload)).
-                             replace('record_indexes = []', 'record_indexes = {}'.format(package_record(workload_type))))
+                             # 替换要监控的指标
+                             replace('record_indexes = []', 'record_indexes = {}'.format(record_indexes)).
+                             replace('work_dir = ""', 'work_dir = "{}"'.format(client_work_dir)))
         read_file.close()
         write_file.close()
+
+# generate_client_exec("sequential_read_512k.vdbench", "vdbench")
 
 
 def distribute_exec_file(workload, workload_type):
@@ -112,15 +122,17 @@ def distribute_exec_file(workload, workload_type):
     # 分发执行文件到每个客户端
     client_ips = list(map(lambda x: x.get('client').get('ip'), CLIENTS))
     client_hostnames = list(map(lambda x: x.get('client').get('hostname'), CLIENTS))
+    client_remote_dir = list(map(lambda x: x.get('client').get('work_dir'), CLIENTS))
     for idx, ip in enumerate(client_ips):
         logger.info("分发到客户端 {}".format(ip))
         ssh = SSHRemoteOperation(ip)
-        # 上传性能客户端python执行文件
+        # 上传性能客户端python执行文件到配置的工作目录
         py_file_path = os.path.join(project_path, "temp", "{}_{}.py".format(CLIENT_FILE_PREFIX, client_hostnames[idx]))
-        ssh.upload_file(py_file_path, "{}_{}.py".format(CLIENT_FILE_PREFIX, client_hostnames[idx]))
-        # 上传性能客户端workload负载文件
-        fio_file_path = os.path.join(project_path, "workloads", workload)
-        ssh.upload_file(fio_file_path, workload)
+        ssh.upload_file(py_file_path, "{}/{}_{}.py".format(client_remote_dir[idx], CLIENT_FILE_PREFIX,
+                                                           client_hostnames[idx]))
+        # 上传性能客户端workload负载文件到配置的工作目录
+        workload_file_path = os.path.join(project_path, "workloads", workload)
+        ssh.upload_file(workload_file_path, "{}/{}".format(client_remote_dir[idx], workload))
 
 
 def check_ceph_health_status(ip=None):

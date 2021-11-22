@@ -1,0 +1,32 @@
+sock_server:
+  ip: 10.0.5.63
+
+ceph:
+  ip: 10.0.9.89
+  level:    # 检查ceph状态级别： health：检查pg健康；  ops：检查慢IO   osd: 检查osd    none：不做任何检查
+    - health
+    - osd
+  time_wait: 300    # ceph集群状态检查循环等待时间
+
+clients:
+  - client:
+      ip: 10.0.9.89
+      hostname: node6
+      port: 20021   # 客户端与主机socket通信的端口
+      work_dir: /root
+      username: root
+      password: daemon
+  - client:
+      ip: 10.0.9.90
+      hostname: node7
+      port: 20022   # 客户端与主机socket通信的端口
+      work_dir: /root
+      username: root
+      password: daemon
+  - client:
+      ip: 10.0.9.91
+      hostname: node8
+      port: 20023   # 客户端与主机socket通信的端口
+      work_dir: /root
+      username: root
+      password: daemon

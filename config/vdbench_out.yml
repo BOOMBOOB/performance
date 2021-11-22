@@ -1,0 +1,5 @@
+vdbench:
+  read_iops: 1
+  read_bw: 2
+  write_iops: 3
+  write_bw: 4

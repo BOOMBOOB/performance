@@ -1,0 +1,15 @@
+workloads:
+  - workload:
+      type: fio
+      run: True
+      record: [read_iops, read_bw, read_clat_avg, write_iops, write_bw, write_clat_avg]
+      workload_files:     # 配置要执行的负载文件 （workloads目录）
+        - sequential_write_512k_2thread.fio
+        - sequential_read_512k_2thread.fio
+  - workload:
+      type: vdbench
+      run: False
+      record: [read_iops, read_bw, write_iops, write_bw]
+      workload_files:
+        - sequential_read_512k.vdbench
+        - sequential_write_512k.vdbench

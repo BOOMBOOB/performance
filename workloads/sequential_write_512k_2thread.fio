@@ -1,0 +1,16 @@
+[global]
+directory=/data
+direct=1
+ioengine=libaio
+thread
+runtime=60
+fallocate=none
+group_reporting
+
+[sequencial_write]
+iodepth=1
+numjobs=2
+rw=write
+size=1GB
+name=fio_file_test_`hostname`
+bs=512k

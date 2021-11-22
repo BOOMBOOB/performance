@@ -1,0 +1,31 @@
+fio:
+  read_total_io: 5    # KB
+  read_bw: 6          # KB/s
+  read_iops: 7
+  read_runtime: 8     # ms
+  read_slat_min: 9
+  read_slat_max: 10
+  read_slat_avg: 11
+  read_slat_std: 12
+  read_clat_min: 13
+  read_clat_max: 14
+  read_clat_avg: 15
+  read_clat_std: 16
+  read_clat_90: 27      # usec
+  read_clat_95: 28      # usec
+  read_clat_99: 29      # usec
+  write_total_io: 46    # KB
+  write_bw: 47          # KB/s
+  write_iops: 48
+  write_runtime: 49     # ms
+  write_slat_min: 50
+  write_slat_max: 51
+  write_slat_avg: 52
+  write_slat_std: 53
+  write_clat_min: 54
+  write_clat_max: 55
+  write_clat_avg: 56
+  write_clat_std: 57
+  write_clat_90: 68     # usec
+  write_clat_95: 69     # usec
+  write_clat_99: 70     # usec

@@ -1,38 +1,9 @@
 import socket
-from config.yml_agrs_parse import Args
-from bin.functions import analyse_prometheus_records, traversal_run_workloads
-from prometheus_client import Gauge
+
+from common.workloads import WorkLoad
 from lib.logee import logger
-
-
-NODE_CONFIG = Args().get_yml_data("nodes.yml")
-
-
-def prometheus_declare():
-    """
-    声明Prometheus数据项，  每次程序启动该方法只能执行一次
-    :return:
-    """
-    records = analyse_prometheus_records()
-    prometheus_records = []
-    for record in records:
-        prometheus_record = Gauge("{}".format(record), "fio {}".format(record.replace("_", " ")), ['client'])
-        prometheus_records.append((record, prometheus_record))
-    return prometheus_records
-
-
-def send_data_to_prom(msg, client, prometheus_records):
-    """
-    发送数据到Prometheus
-    :param prometheus_records: 声明的Prometheus指标
-    :param msg: 要发送的信息
-    :param client: 发出信息的客户端
-    :return:
-    """
-    prometheus_records = prometheus_records
-    for record, prometheus_record in prometheus_records:
-        # get()必须给default值，否则set()会报错
-        prometheus_record.labels(client).set(msg.get(record, "0"))
+from config import NODE_CONFIG
+from utils.Prometheus import Prometheus
 
 
 def socket_server(client, port, prometheus_records):
@@ -50,7 +21,7 @@ def socket_server(client, port, prometheus_records):
 
     server_ip = NODE_CONFIG.get("sock_server").get("ip")
     server = socket.socket(type=socket.SOCK_DGRAM)
-    workload_nums = traversal_run_workloads()
+    workload_nums = WorkLoad.traversal_run_workloads()
     try:
         server.bind(("{}".format(server_ip), use_port))
         logger.info("服务端开启，接收客户端 {} 消息中....".format(client))
@@ -70,7 +41,7 @@ def socket_server(client, port, prometheus_records):
                     break
             else:
                 # 将客户端发送到服务端的数据push到Prometheus
-                send_data_to_prom(eval(msg), client, prometheus_records)
+                Prometheus.push_data_to_prometheus(eval(msg), client, prometheus_records)
 
     except Exception as e:
         logger.info("开启服务端监听异常： ", e)
@@ -82,7 +53,6 @@ def socket_server(client, port, prometheus_records):
 if __name__ == '__main__':
     from prometheus_client import start_http_server
     start_http_server(9091)
-    args = Args()
     clients = NODE_CONFIG["clients"]
     ports = list(map(lambda x: x.get("client").get("port"), clients))
     print(ports, type(ports))

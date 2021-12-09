@@ -3,8 +3,7 @@ import time
 import paramiko
 import os
 from lib.logee import logger
-from config.yml_agrs_parse import Args
-NODE_CONFIG = Args().get_yml_data("nodes.yml")
+from config import NODE_CONFIG
 
 
 match_list = []

@@ -7,6 +7,27 @@ ceph:
     - health
     - osd
   time_wait: 300    # ceph集群状态检查循环等待时间
+  ceph_perform_mon: False
+  hardware_mon: False
+  nodes:
+    node1:
+      ip: 10.0.9.89
+      hostname: node6
+      port: 20024
+      username: root
+      password: daemon
+    node2:
+      ip: 10.0.9.90
+      hostname: node7
+      port: 20025
+      username: root
+      password: daemon
+    node3:
+      ip: 10.0.9.91
+      hostname: node8
+      port: 20026
+      username: root
+      password: daemon
 
 clients:
   - client:

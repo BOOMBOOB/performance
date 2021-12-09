@@ -2,14 +2,12 @@ import time
 
 from lib.MyThreadWithResult import ParallelOperation
 from lib.SSHRemoteOperation import SSHRemoteOperation
-from config.yml_agrs_parse import Args
-from config.socket_server import socket_server, prometheus_declare
-from bin.functions import CLIENT_FILE_PREFIX, distribute_exec_file, check_ceph_health_status, check_ceph_osd_status, \
-    traversal_run_workloads
+from config.socket_server import socket_server
+from config import NODE_CONFIG
+from common.workloads import WorkLoad, CLIENT_FILE_PREFIX
+from common.ceph import Ceph
 from lib.logee import logger
-
-NODE_CONFIG = Args().get_yml_data("nodes.yml")
-WORKLOAD_RUN_CONFIG = Args().get_yml_data("workload_run.yml")
+from utils.Prometheus import Prometheus
 
 
 tp = ParallelOperation()
@@ -20,7 +18,7 @@ def start_server_service(workloads):
     启动nodes.yml中配置的所有客户端对应的服务端socket监听
     :return:
     """
-    prometheus_records = prometheus_declare()
+    prometheus_records = Prometheus.prometheus_declare()
     logger.info("启动服务端SOCKET SERVER监听")
     # 默认服务端为本机时的启动方式
     for node in NODE_CONFIG.get("clients"):
@@ -58,7 +56,8 @@ def workflow():
     定义工作流程
     :return:
     """
-    workloads = traversal_run_workloads()
+    workloads = WorkLoad.traversal_run_workloads()
+    ceph = Ceph()
 
     start_server_service(workloads)
     time.sleep(10)
@@ -68,14 +67,16 @@ def workflow():
         if "none" not in check:
             if "health" in check:
                 logger.info("检查 Ceph 状态....")
-                check_ceph_health_status()
+                ceph.check_ceph_health_status()
             if "osd" in check:
                 logger.info("检查 OSD 状态....")
-                check_ceph_osd_status()
+                ceph.check_ceph_osd_status()
             if "ops" in check:
+                logger.info("检查 slow ops 状态....")
+                ceph.check_ceph_slow_ops()
                 pass
         logger.info("分发 {} 工作： {}".format(work_type, work))
-        distribute_exec_file(work, work_type)
+        WorkLoad.distribute_exec_file(work, work_type)
         start_client_service()
 
 

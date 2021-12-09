@@ -13,6 +13,7 @@ ip_port = (("10.0.5.63", 9999))
 workload_type = "fio"
 workload = "sequential_write_512k_2thread.fio"
 work_dir = ""
+record_indexes = []
 
 
 def send_data_format(data_line=None):
@@ -22,7 +23,6 @@ def send_data_format(data_line=None):
     :return:
     """
     data = {}
-    record_indexes = []
     if data_line is not None:
         split = ""
         if workload_type == "fio":

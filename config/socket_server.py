@@ -42,8 +42,10 @@ def socket_server(client, port, prometheus_records, counter, lock):
                     break
             else:
                 lock.acquire()
-                Prometheus.count_total_for_prometheus(counter, eval(msg), int(time.time()))
-                lock.release()
+                try:
+                    Prometheus.count_total_for_prometheus(counter, eval(msg), int(time.time()))
+                finally:
+                    lock.release()
                 Prometheus.push_data_to_prometheus(counter, "total", prometheus_records)
                 # 将客户端发送到服务端的数据push到Prometheus
                 Prometheus.push_data_to_prometheus(eval(msg), client, prometheus_records)

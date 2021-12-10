@@ -1,4 +1,3 @@
-import time
 from prometheus_client import Gauge
 
 from lib.logee import logger
@@ -13,7 +12,6 @@ class Prometheus(object):
 
     def __init__(self):
         names = self.__dict__
-        names["clients"] = get_clients()
         names["timer"] = 0
         records = Prometheus.analyse_prometheus_records()
         for record in records:
@@ -54,9 +52,10 @@ class Prometheus(object):
         :return:
         """
         for record, prometheus_record in prometheus_records:
-            # get()必须给default值，否则set()会报错
+            # 不 push 时延的total值
             if "lat" in record and client == "total":
                 continue
+            # get()必须给default值，否则set()会报错, 若push的数据中没有record的值，则传0
             prometheus_record.labels(client).set(msg.get(record, "0"))
 
     @staticmethod
@@ -79,8 +78,8 @@ class Prometheus(object):
                     continue
                 counter[key] += float(value)
         else:
-            print("计数器判定timer不满足，重置...")
-            print("counter: ", counter)
+            # print("计数器判定timer不满足，重置...")
+            # print("counter: ", counter)
             Prometheus.counter_reset(counter, data)
             counter["timer"] = f_time
 

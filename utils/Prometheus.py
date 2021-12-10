@@ -1,10 +1,23 @@
+import time
 from prometheus_client import Gauge
 
 from lib.logee import logger
-from config import WORKLOAD_RUN_CONFIG
+from config import WORKLOAD_RUN_CONFIG, NODE_CONFIG
+
+
+def get_clients():
+    return list(map(lambda x: x.get("client").get("hostname"), NODE_CONFIG.get("clients")))
 
 
 class Prometheus(object):
+
+    def __init__(self):
+        names = self.__dict__
+        names["clients"] = get_clients()
+        names["timer"] = 0
+        records = Prometheus.analyse_prometheus_records()
+        for record in records:
+            names[record] = float(0)
 
     @staticmethod
     def analyse_prometheus_records():
@@ -40,7 +53,44 @@ class Prometheus(object):
         :param client: 发出信息的客户端
         :return:
         """
-        prometheus_records = prometheus_records
         for record, prometheus_record in prometheus_records:
             # get()必须给default值，否则set()会报错
+            if "lat" in record and client == "total":
+                continue
             prometheus_record.labels(client).set(msg.get(record, "0"))
+
+    @staticmethod
+    def counter_reset(counter, data):
+        for r in data.keys():
+            counter[r] = float(0)
+
+    @staticmethod
+    def count_total_for_prometheus(counter, data: dict, f_time):
+        """
+        获取并处理各个数据来源（客户端、...）的同类型数据
+        :param counter:
+        :param f_time: 数据传入时间（ 0.1秒级误差 ）
+        :param data: 性能数据   dict
+        :return: total_read_bw ...
+        """
+        if counter["timer"] == f_time:
+            for key, value in data.items():
+                if "lat" in key:
+                    continue
+                counter[key] += float(value)
+        else:
+            print("计数器判定timer不满足，重置...")
+            print("counter: ", counter)
+            Prometheus.counter_reset(counter, data)
+            counter["timer"] = f_time
+
+            for key, value in data.items():
+                if "lat" in key:
+                    continue
+                counter[key] += float(value)
+        pass
+
+
+if __name__ == '__main__':
+    p = Prometheus.prometheus_declare()
+    print(p)

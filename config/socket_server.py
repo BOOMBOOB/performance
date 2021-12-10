@@ -1,4 +1,5 @@
 import socket
+import time
 
 from common.workloads import WorkLoad
 from lib.logee import logger
@@ -6,7 +7,7 @@ from config import NODE_CONFIG
 from utils.Prometheus import Prometheus
 
 
-def socket_server(client, port, prometheus_records):
+def socket_server(client, port, prometheus_records, counter, lock):
     """
     启动socket server服务端，接收客户端发送的实时数据
     :param prometheus_records: 声明的Prometheus监控指标
@@ -40,6 +41,10 @@ def socket_server(client, port, prometheus_records):
                     logger.info("客户端 {} 执行完毕，等待服务端关闭！！".format(client))
                     break
             else:
+                lock.acquire()
+                Prometheus.count_total_for_prometheus(counter, eval(msg), int(time.time()))
+                lock.release()
+                Prometheus.push_data_to_prometheus(counter, "total", prometheus_records)
                 # 将客户端发送到服务端的数据push到Prometheus
                 Prometheus.push_data_to_prometheus(eval(msg), client, prometheus_records)
 

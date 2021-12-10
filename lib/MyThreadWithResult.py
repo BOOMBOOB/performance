@@ -1,6 +1,5 @@
 import datetime
 import threading
-import time
 import traceback
 import inspect
 import ctypes
@@ -110,7 +109,6 @@ class ParallelOperation:
                     self._async_raise(thread.ident, SystemExit)
             except Exception:
                 continue
-
 
     def join(self):
         """等待线程集中所有线程结束"""

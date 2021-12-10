@@ -1,4 +1,5 @@
 import time
+from threading import Lock
 
 from lib.MyThreadWithResult import ParallelOperation
 from lib.SSHRemoteOperation import SSHRemoteOperation
@@ -20,12 +21,14 @@ def start_server_service(workloads):
     """
     prometheus_records = Prometheus.prometheus_declare()
     logger.info("启动服务端SOCKET SERVER监听")
+    p = Prometheus()
+    lock = Lock()
     # 默认服务端为本机时的启动方式
     for node in NODE_CONFIG.get("clients"):
         node = node.get("client")
         client = node.get("hostname")
         port = node.get("port")
-        tp.add(socket_server, args=(client, port, prometheus_records))
+        tp.add(socket_server, args=(client, port, prometheus_records, p.__dict__, lock))
     tp.start()
     tp.clear()
     pass

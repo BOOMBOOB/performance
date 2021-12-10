@@ -13,7 +13,7 @@ ip_port = (("10.0.5.63", 20021))
 workload_type = "vdbench"
 workload = "sequential_write_512k.vdbench"
 work_dir = "/home"
-record_indexes = [('write_bw', 12), ('read_bw', 11)]
+record_indexes = [('read_bw', 11), ('write_bw', 12)]
 
 
 def send_data_format(data_line=None):
